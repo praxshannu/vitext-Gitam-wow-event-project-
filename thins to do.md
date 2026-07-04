@@ -47,3 +47,5 @@ Things to consider
         - [ ] Should be interactive 
 
 
+hi hte git push is troubling
+ß
