@@ -1,92 +1,70 @@
-<<<<<<< HEAD
-hi still havent thought of writing th eread me
-=======
-# Automated Interactive Streamlit Webpage Generator
+# Vitext — AI-Powered Lecture → Visual Content Pipeline
 
-A working implementation of the Hybrid Template Engine, extended from the
-math-only proof of concept to all six subject categories in the spec:
-Coding, Algorithms, Poetry & Literature, Mathematics, Hard Sciences, and
-Engineering.
+Two output modes from the same project:
 
-**The core idea stays the same and is why this hits zero-shot reliability:**
-the AI never writes Streamlit or Python code. It only ever outputs a JSON
-object (schema in `schema.md`). One pre-built, pre-tested rendering engine
-(`app.py`) turns that JSON into a full interactive page, for any of the six
-categories. Since the AI's entire output surface is strings/numbers/arrays,
-there's no code for it to get wrong.
+1. **Lecture Webpage Generator** (`lecture_webpage_generator/`) — Streamlit interactive pages from JSON payloads
+2. **Vitext Manim Pipeline** (`vitext/`) — Animated explainer videos via a multi-agent Manim architecture
 
-## Files
+---
 
-| file | purpose |
-|---|---|
-| `app.py` | The rendering engine. Run this with Streamlit. |
-| `schema.md` | The JSON contract between the AI and the renderer. |
-| `ai_system_prompt.md` | System prompt to give an LLM so it acts as the "AI Processing Engine" — reads a transcript, classifies it, and outputs schema-valid JSON. |
-| `sample_payloads/*.json` | One worked example per category, so you can see every interactive type and every quiz mode render without needing an API key. |
-| `test_app.py` | Automated test that loads every sample, exercises every widget and button, and asserts no exceptions. Run it after any change to `app.py`. |
-| `requirements.txt` | Dependencies. |
+## 1. Lecture Webpage Generator
 
-## Running it
+A Hybrid Template Engine where the AI **never writes code** — it outputs JSON,
+and a pre-built renderer turns it into interactive pages (quizzes, graphs,
+algorithm visualizers). Supports 6 categories: Coding, Algorithms, Poetry,
+Mathematics, Science, Engineering.
 
 ```bash
+cd lecture_webpage_generator
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-In the sidebar you can:
-1. **Sample gallery** — browse the six pre-built examples with zero setup.
-2. **Upload JSON payload** — drop in any JSON file matching `schema.md`.
-3. **Generate from transcript** — paste a lecture transcript and your own
-   Anthropic API key, and the app calls the model live using
-   `ai_system_prompt.md`, then renders whatever JSON comes back.
+See [`lecture_webpage_generator/README.md`](lecture_webpage_generator/README.md) for full details.
 
-Option 3 is the full pipeline described in the spec (transcript → classify →
-generate → render) running end-to-end in one app. It defaults to
-`claude-sonnet-5`; change `DEFAULT_MODEL` in `app.py` if you want a
-different model.
+---
 
-## What's been verified
+## 2. Vitext Manim Pipeline (NEW)
 
-- Every sample payload was run through Streamlit's `AppTest` harness with
-  every radio button, checkbox, slider, and button exercised (form
-  submits, "Next"/"Reveal"/"Verify Answers" clicks included) — zero
-  exceptions across all six categories and all four quiz modes.
-- The formula evaluator used by the math and engineering interactives
-  (`safe_eval_formula`) was tested against a code-injection attempt
-  (`__import__("os").system(...)`) and correctly rejects it.
+A **chunked, multi-modal, parallelized** architecture for generating
+polished Manim-animated math/science videos from transcripts.
 
-## Two design decisions worth knowing about
+### Architecture
 
-1. **The "code editor" for the Coding category doesn't execute code.**
-   Running arbitrary student-submitted code is a real security risk
-   (sandbox escape, resource exhaustion), so `code_practice` instead shows
-   a reference snippet and does keyword-based feedback on the student's
-   attempt. If you want real execution later, that needs a proper
-   sandboxed runner (e.g. a locked-down container per submission) — not
-   something to bolt on with `exec()`.
+```
+Transcript → Script Agent → [Cache → Code Agent → Render → Critic] × N → Assembly → .mp4
+```
 
-2. **Formula evaluation (`graph_2d`, `numeric_calculator`) is restricted,
-   not fully sandboxed.** `safe_eval_formula` disables builtins and
-   whitelists only `math`/`numpy` names plus your declared variables, which
-   blocks straightforward injection (see the test above). It is not a
-   hardened sandbox — Python's `eval` can't be made fully safe this way.
-   Since the formula string is meant to come from your own AI Engine call
-   (governed by `ai_system_prompt.md`) rather than an untrusted third
-   party, this is a reasonable tradeoff for this use case. For a
-   public-facing deployment accepting payloads from strangers, swap in a
-   real restricted-evaluation library such as `simpleeval`.
+| Agent | Role |
+|---|---|
+| **Script Agent** | Breaks transcript into 3–8 atomic scene chunks |
+| **Code Agent** | Generates Manim code per chunk using a Brand Library (no raw Manim) |
+| **Critic Agent** | Vision model reviews rendered frames for overlaps, contrast, etc. |
+| **Assembly Agent** | FFmpeg stitches all scenes with crossfade transitions |
+| **Scene Cache** | SQLite + sentence-transformer embeddings for reusing past renders |
 
-## Extending it
+### Quick Start
 
-- **New algorithm for the visualizer:** add a `*_steps(...)` generator
-  function to `app.py` and register it in the `ALGORITHMS` dict. The AI
-  prompt already tells the model which algorithm names exist.
-- **New interactive type:** add a `render_*` function, register it in
-  `INTERACTIVE_RENDERERS`, and document its fields in `schema.md` +
-  `ai_system_prompt.md`.
-- **New quiz behavior:** same pattern via `QUIZ_RENDERERS`.
+```bash
+pip install -r vitext/requirements.txt
 
-Because the AI/renderer boundary is a JSON schema, every one of these
-extensions is a change to pre-tested Python — never to what the AI is
-allowed to generate freely.
->>>>>>> 2ddfd72 (modited files)
+# Also need Manim and FFmpeg installed:
+# brew install ffmpeg   (macOS)
+# pip install manim
+
+export GOOGLE_API_KEY="your-gemini-api-key"
+
+python -c "
+from vitext.orchestrator import PipelineOrchestrator
+orch = PipelineOrchestrator()
+result = orch.run_sync('Explain the chain rule in calculus')
+print(f'Video: {result.final_result.output_path}')
+"
+```
+
+### Key Design Decisions
+
+- **Brand Library over raw Manim**: The Code Agent imports from `vitext.brand_library` — pre-styled wrappers (`BrandTitle`, `BrandAxes`, `BrandFormula`) that enforce a cohesive dark-theme aesthetic. This prevents style drift.
+- **No LangGraph**: Uses plain `asyncio.gather()` + semaphores for parallel scene processing. Lighter weight, no extra dependency.
+- **Local caching**: SQLite + `sentence-transformers` (all-MiniLM-L6-v2). No cloud vector DB needed.
+- **Gemini for all agents**: Script, Code, and Critic agents all use Gemini 2.5 Flash by default.
