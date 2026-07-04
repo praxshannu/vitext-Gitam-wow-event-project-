@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-hi still havent thought of writing th eread me
-=======
 # Automated Interactive Streamlit Webpage Generator
 
 A working implementation of the Hybrid Template Engine, extended from the
@@ -89,4 +86,3 @@ different model.
 Because the AI/renderer boundary is a JSON schema, every one of these
 extensions is a change to pre-tested Python — never to what the AI is
 allowed to generate freely.
->>>>>>> 2ddfd72 (modited files)

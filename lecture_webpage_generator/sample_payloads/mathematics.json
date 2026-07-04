@@ -1,0 +1,70 @@
+{
+  "subject_category": "mathematics",
+  "page_title": "Understanding the Sine Wave Function",
+  "content_blocks": [
+    {
+      "type": "text",
+      "value": "The sine function maps an angle to the y-coordinate of a point on the unit circle. When we generalize it to y = A sin(Bx + C) + D, each constant controls a different visual property of the wave."
+    },
+    {
+      "type": "latex_formula",
+      "value": "y = A \\sin(Bx + C) + D"
+    },
+    {
+      "type": "text",
+      "value": "A controls amplitude (wave height), B controls frequency (how compressed the wave is), C shifts the wave left/right, and D shifts it up/down."
+    }
+  ],
+  "interactive_config": {
+    "type": "graph_2d",
+    "title": "Interactive Graph Simulator",
+    "equation": "amplitude * np.sin(frequency * x + phase)",
+    "x_range": [0, 10],
+    "controls": [
+      {"label": "Amplitude", "min": 0.1, "max": 5.0, "default": 1.0, "key": "amplitude"},
+      {"label": "Frequency", "min": 1.0, "max": 10.0, "default": 2.0, "key": "frequency"},
+      {"label": "Phase Shift", "min": 0.0, "max": 6.28, "default": 0.0, "key": "phase"}
+    ]
+  },
+  "quiz_form": {
+    "mode": "delayed_key",
+    "title": "Challenge: Sine Wave Mastery",
+    "questions": [
+      {
+        "question": "What happens when you increase the frequency variable?",
+        "type": "single",
+        "options": ["The wave gets taller", "The wave compresses horizontally", "The wave moves right", "Nothing changes"],
+        "correct_indices": [1],
+        "explanation": "Higher frequency means more wave cycles fit into the same horizontal span."
+      },
+      {
+        "question": "Which constant controls the wave's height?",
+        "type": "single",
+        "options": ["A (amplitude)", "B (frequency)", "C (phase)", "D (vertical shift)"],
+        "correct_indices": [0],
+        "explanation": "Amplitude directly scales how far the wave rises and falls from its midline."
+      },
+      {
+        "question": "If D = 3, what happens to the wave's midline?",
+        "type": "single",
+        "options": ["It stays at y = 0", "It shifts up to y = 3", "It shifts down to y = -3", "It disappears"],
+        "correct_indices": [1],
+        "explanation": "D is a vertical shift added after the sine term, moving the whole wave up by 3."
+      },
+      {
+        "question": "Which changes shift the wave horizontally? (select all that apply)",
+        "type": "multi",
+        "options": ["Changing C (phase)", "Changing A (amplitude)", "Changing B in a way that also changes C's effective shift", "Changing D"],
+        "correct_indices": [0],
+        "explanation": "Only the phase constant C directly shifts the wave left or right."
+      },
+      {
+        "question": "At x = 0 with C = 0, what is sin(Bx + C)?",
+        "type": "single",
+        "options": ["1", "-1", "0", "Undefined"],
+        "correct_indices": [2],
+        "explanation": "sin(0) = 0 regardless of B when C = 0 and x = 0."
+      }
+    ]
+  }
+}

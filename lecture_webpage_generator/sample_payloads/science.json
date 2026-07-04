@@ -1,0 +1,62 @@
+{
+  "subject_category": "science",
+  "page_title": "Photosynthesis: Turning Light into Sugar",
+  "content_blocks": [
+    {
+      "type": "text",
+      "value": "Photosynthesis converts light energy, water, and carbon dioxide into glucose and oxygen. It happens in the chloroplasts of plant cells, primarily in structures called thylakoids."
+    },
+    {
+      "type": "latex_formula",
+      "value": "6CO_2 + 6H_2O + \\text{light} \\rightarrow C_6H_{12}O_6 + 6O_2"
+    },
+    {
+      "type": "text",
+      "value": "The process has two stages: the light-dependent reactions (which capture energy and produce ATP and NADPH) and the light-independent reactions, or Calvin cycle (which use that energy to build glucose)."
+    }
+  ],
+  "interactive_config": {
+    "type": "media_gallery",
+    "title": "Visual Explainer",
+    "images": [
+      {"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Simple_photosynthesis_overview.svg/640px-Simple_photosynthesis_overview.svg.png", "caption": "Overview of inputs and outputs"},
+      {"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Leaf_1_web.jpg/640px-Leaf_1_web.jpg", "caption": "Chloroplasts inside leaf cells"},
+      {"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Chlorophyll_ab_spectra2.PNG/640px-Chlorophyll_ab_spectra2.PNG", "caption": "Light absorption spectrum of chlorophyll"}
+    ],
+    "simulation_note": "Chlorophyll absorbs red and blue light most efficiently and reflects green light, which is why most leaves appear green."
+  },
+  "quiz_form": {
+    "mode": "tickbox",
+    "title": "Quick Check",
+    "questions": [
+      {
+        "question": "What are the inputs to photosynthesis? (select all that apply)",
+        "type": "multi",
+        "options": ["Carbon dioxide", "Water", "Light energy", "Glucose"],
+        "correct_indices": [0, 1, 2],
+        "explanation": "Glucose is a product of photosynthesis, not an input."
+      },
+      {
+        "question": "Where in the plant cell does photosynthesis primarily occur?",
+        "type": "single",
+        "options": ["Mitochondria", "Nucleus", "Chloroplasts", "Ribosomes"],
+        "correct_indices": [2],
+        "explanation": "Chloroplasts, and specifically the thylakoid membranes inside them, house the light-dependent reactions."
+      },
+      {
+        "question": "Why do most leaves appear green?",
+        "type": "single",
+        "options": ["Chlorophyll absorbs green light strongly", "Chlorophyll reflects green light and absorbs red/blue light", "Leaves contain no pigment", "Green light doesn't reach leaves"],
+        "correct_indices": [1],
+        "explanation": "Chlorophyll's absorption spectrum peaks in the red and blue ranges, leaving green light reflected back to our eyes."
+      },
+      {
+        "question": "What does the Calvin cycle use to build glucose?",
+        "type": "single",
+        "options": ["Only sunlight directly", "ATP and NADPH from the light-dependent reactions", "Oxygen from the air", "Chlorophyll molecules directly"],
+        "correct_indices": [1],
+        "explanation": "The Calvin cycle is light-independent and relies on the energy carriers produced in the earlier light-dependent stage."
+      }
+    ]
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "subject_category": "engineering",
+  "page_title": "Ohm's Law: Voltage, Current, and Resistance",
+  "content_blocks": [
+    {
+      "type": "text",
+      "value": "Ohm's Law describes the relationship between voltage, current, and resistance in a simple circuit: voltage equals current multiplied by resistance."
+    },
+    {
+      "type": "latex_formula",
+      "value": "V = I \\times R"
+    },
+    {
+      "type": "text",
+      "value": "This means that for a fixed resistance, increasing current requires more voltage, and for a fixed voltage, increasing resistance decreases current."
+    }
+  ],
+  "interactive_config": {
+    "type": "numeric_calculator",
+    "title": "Ohm's Law Calculator",
+    "formula": "current * resistance",
+    "output_label": "Voltage",
+    "output_unit": "V",
+    "inputs": [
+      {"label": "Current", "unit": "A", "min": 0, "max": 20, "default": 2, "key": "current"},
+      {"label": "Resistance", "unit": "Ω", "min": 0, "max": 1000, "default": 100, "key": "resistance"}
+    ]
+  },
+  "quiz_form": {
+    "mode": "comprehensive",
+    "title": "Comprehensive Technical Assessment",
+    "pass_threshold": 0.7,
+    "questions": [
+      {
+        "question": "What is voltage if current = 3A and resistance = 50Ω?",
+        "type": "single",
+        "options": ["150 V", "16.7 V", "53 V", "0.06 V"],
+        "correct_indices": [0],
+        "explanation": "V = I × R = 3 × 50 = 150 V."
+      },
+      {
+        "question": "If resistance increases while voltage stays constant, what happens to current?",
+        "type": "single",
+        "options": ["It increases", "It decreases", "It stays the same", "It becomes negative"],
+        "correct_indices": [1],
+        "explanation": "Since I = V / R, a larger R with fixed V produces a smaller current."
+      },
+      {
+        "question": "Which units are correctly matched to their quantity? (select all that apply)",
+        "type": "multi",
+        "options": ["Voltage — Volts (V)", "Current — Amperes (A)", "Resistance — Ohms (Ω)", "Resistance — Watts (W)"],
+        "correct_indices": [0, 1, 2],
+        "explanation": "Watts measure power, not resistance."
+      },
+      {
+        "question": "Rearranged for resistance, Ohm's Law is:",
+        "type": "single",
+        "options": ["R = V × I", "R = V / I", "R = I / V", "R = V + I"],
+        "correct_indices": [1],
+        "explanation": "Dividing both sides of V = I × R by I gives R = V / I."
+      },
+      {
+        "question": "A circuit has 0 resistance. What does Ohm's Law predict for voltage at any nonzero current?",
+        "type": "single",
+        "options": ["Voltage is undefined/infinite in practice", "Voltage is always 0", "Voltage equals current", "Voltage equals resistance"],
+        "correct_indices": [1],
+        "explanation": "With R = 0, V = I × 0 = 0 regardless of current (this is the idealized short-circuit case)."
+      }
+    ]
+  }
+}
