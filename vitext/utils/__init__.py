@@ -1,1 +1,0 @@
-"""Vitext utility modules."""
