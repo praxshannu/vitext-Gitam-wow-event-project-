@@ -6,8 +6,10 @@ can be unit-tested or reused from a CLI/Streamlit/PyQt5 front-end alike.
 
 Turns an educational transcript (.txt) into:
   1. A summary of the transcript.
-  2. A Manim scene (rendered to .mp4) that visually explains it.
-  3. A complete, runnable Streamlit app that teaches the same content
+  2. A Numbered Blueprint (NB Summary) derived from that summary.
+  3. A Manim scene (rendered to .mp4) that visually explains it, built from
+     the NB Summary rather than the raw summary.
+  4. A complete, runnable Streamlit app that teaches the same content
      interactively (explanations, matplotlib diagrams, quiz with Verify button).
 
 Both generation steps call an Ollama-compatible chat endpoint
@@ -111,6 +113,7 @@ def _extract_code_block(text: str) -> str:
 class PipelineResult:
     transcript_path: str
     summary: str = ""
+    nb_summary: str = ""
     manim_code: str = ""
     manim_video_path: Optional[str] = None
     streamlit_code: str = ""
@@ -130,25 +133,72 @@ class TranscriptEduPipeline:
         "no markdown headers."
     )
 
-    MANIM_SYSTEM_PROMPT = textwrap.dedent("""
-        You are an expert Manim (Community Edition) developer and educator.
-        Your job is to convert an educational transcript summary into a single,
-        complete, runnable Manim Scene that visually explains the material.
+    NB_SUMMARY_SYSTEM_PROMPT = textwrap.dedent("""
+You are an expert instructional designer who converts study summaries into a
+Numbered Blueprint (NB Summary) for an animated explainer video.
 
-        Rules:
-        1. Identify the subject and the 3-6 most important concepts to visualize.
-        2. Plan a short sequence of animations that build understanding step by
-           step (e.g. write a title, show a diagram, transform it, highlight key
-           parts, show short on-screen text summarizing each idea).
-        3. Use only the `manim` Community Edition API (`from manim import *`).
-        4. Define exactly ONE Scene subclass named `GeneratedScene` with a
-           `construct(self)` method.
-        5. Prefer Text() over Tex()/MathTex() unless real mathematical notation
-           is required, to avoid requiring a LaTeX installation.
-        6. Keep total runtime reasonable (roughly 45-90 seconds of animation).
-        7. Do not leave TODO comments or placeholders.
-        8. Output ONLY a single Python code block. No prose before or after it.
-    """).strip()
+Given a study summary, produce an NB Summary following these rules:
+
+1. Divide the lesson into Scene 1, Scene 2, ... Scene N.
+2. Every scene teaches exactly ONE concept.
+3. Scene 1 starts with:
+   Screen Starts With: Blank Screen
+4. Every scene must define:
+   - Scene Title
+   - Teaching Goal
+   - Screen Starts With
+   - Narration
+   - Visual Elements
+   - Animation Sequence
+   - Objects Remaining
+   - Transition
+5. Every next scene must begin from the ending state of the previous scene.
+6. Explicitly decide which objects remain and which disappear.
+7. Remove unused objects before introducing unrelated content.
+8. Never allow unrelated text or diagrams to overlap.
+9. Keep at most 3-5 major objects visible at any time.
+10. 10. For each scene transition, clearly specify whether objects should:
+- Fade out
+- Transform into new objects
+- Be replaced
+- Remain visible
+- Clear the scree
+
+Output ONLY the NB Summary as structured plain text (Scene 1, Scene 2, ...),
+with no prose before or after it, and no code.
+""").strip()
+
+    MANIM_SYSTEM_PROMPT = textwrap.dedent("""
+You are an expert Manim (Community Edition) developer, educator, and instructional designer.
+
+Your task is to convert a Numbered Blueprint (NB Summary) — already broken
+into Scene 1, Scene 2, ... Scene N, each with a Scene Title, Teaching Goal,
+Screen Starts With, Narration, Visual Elements, Animation Sequence, Objects
+Remaining, and Transition — into a single, complete, runnable Manim Scene.
+
+Faithfully implement the NB Summary as given. Do not invent new scenes or
+reorder the ones provided.
+
+Rules for the generated code:
+
+1. Use only `from manim import *`.
+2. Define exactly ONE Scene subclass named `GeneratedScene`.
+3. Prefer Text() over Tex()/MathTex() unless mathematical notation is required.
+4. Use VGroup to organize related objects.
+5. Position objects using arrange(), next_to(), to_edge(), and align_to() rather than hard-coded coordinates.
+6. Introduce concepts one at a time, following the NB Summary's Animation Sequence.
+7. Reveal formulas gradually.
+8. Add short waits after important animations.
+9. Keep the total runtime around 45-90 seconds.
+10. Do not leave TODO comments.
+11. Output ONLY a single Python code block.
+12. Do NOT output the NB Summary itself, only the resulting Manim code.
+13. At the beginning of every new scene, remove or transform objects according
+to the NB Summary's "Objects Remaining" and "Transition" sections. Never leave
+objects from previous scenes visible unless explicitly listed under
+"Objects Remaining."
+
+""").strip()
 
     STREAMLIT_SYSTEM_PROMPT = textwrap.dedent("""
         You are an expert educational software engineer.
@@ -198,9 +248,20 @@ class TranscriptEduPipeline:
         combined = "\n\n".join(partial_summaries)
         return self.client.generate(self.SUMMARY_SYSTEM_PROMPT, combined)
 
+    # ---------------- Step 1c: NB Summary (blueprint) ----------------
+    def generate_nb_summary(self, summary: str) -> str:
+        """
+        Converts the study summary into a Numbered Blueprint (NB Summary):
+        an explicit, scene-by-scene animation plan. Splitting this out as its
+        own call (instead of asking the Manim prompt to do it "internally")
+        makes the blueprint inspectable/debuggable and gives the Manim step a
+        much more concrete, already-structured input to work from.
+        """
+        return self.client.generate(self.NB_SUMMARY_SYSTEM_PROMPT, summary,temperature=0.2)
+
     # ---------------- Step 2: Manim ----------------
-    def generate_manim_code(self, summary: str) -> str:
-        raw = self.client.generate(self.MANIM_SYSTEM_PROMPT, summary)
+    def generate_manim_code(self, nb_summary: str) -> str:
+        raw = self.client.generate(self.MANIM_SYSTEM_PROMPT, nb_summary)
         return _extract_code_block(raw)
 
     def render_manim_video(self, manim_code: str, output_dir: str, quality: str = "m") -> str:
@@ -250,7 +311,10 @@ class TranscriptEduPipeline:
         result.summary = self.summarize_transcript(transcript)
         (out_dir / "summary.txt").write_text(result.summary, encoding="utf-8")
 
-        result.manim_code = self.generate_manim_code(result.summary)
+        result.nb_summary = self.generate_nb_summary(result.summary)
+        (out_dir / "nb_summary.txt").write_text(result.nb_summary, encoding="utf-8")
+
+        result.manim_code = self.generate_manim_code(result.nb_summary)
         (out_dir / "generated_scene.py").write_text(result.manim_code, encoding="utf-8")
 
         if render_video:

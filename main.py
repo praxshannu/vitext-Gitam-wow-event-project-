@@ -1,30 +1,4 @@
-"""
-main.py
 
-PyQt5 desktop app: Transcript -> Manim explainer video + Streamlit lesson app.
-
-Run with:
-    python main.py
-
-Requirements (pip):
-    pip install PyQt5 requests manim
-
-Requirements (system):
-    - Ollama running locally (or reachable) with a model pulled, e.g.:
-        ollama pull llama3.1:70b
-    - ffmpeg on PATH (required by Manim)
-    - Optional: PyQt5 multimedia plugins for in-app video preview. If they
-      aren't available, the app falls back to opening the video with your
-      OS's default player.
-
-API key:
-    Create a file named `config.py` next to this one containing:
-        api_key = "your-key-here"
-    This is optional -- local `ollama serve` normally needs no key at all.
-    If `config.py` doesn't exist, the app still runs fine (api_key stays empty
-    and no Authorization header is sent), and you can also just type a key
-    directly into the "API key" field in the UI.
-"""
 
 from __future__ import annotations
 
@@ -54,7 +28,7 @@ except Exception:
 from pipeline import TranscriptEduPipeline
 
 
-CONFIG_API_KEY = ""
+CONFIG_API_KEY = "your own Ollama code"
 
 
 APP_DIR = Path(__file__).resolve().parent
@@ -152,7 +126,7 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout(panel)
 
         form = QFormLayout()
-        self.model_edit = QLineEdit("llama3.1:70b")
+        self.model_edit = QLineEdit("gpt-oss:120b-cloud")
         self.host_edit = QLineEdit("http://localhost:11434")
         self.api_key_edit = QLineEdit(CONFIG_API_KEY or "")
         self.api_key_edit.setEchoMode(QLineEdit.Password)
